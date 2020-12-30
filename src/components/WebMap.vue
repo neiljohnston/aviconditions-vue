@@ -1,34 +1,14 @@
 <template>
   <div>
     <div id="viewDiv" ref="mapView"></div>
-    <!-- <div id="info" ref="info" class="esri-widget"> -->
+    <div id="info" ref="info" class="esri-widget">
     </div>
   </div>
 </template>
 
 <script>
 import { loadModules } from 'esri-loader';
-
-const bcExtent = {
-  // autocasts as new Extent()
-  xmax: -12177718.03530625,
-  xmin: -15988562.517490985,
-  ymax: 8894547.02325949,
-  ymin: 6096340.291796502,
-  spatialReference: {
-    // autocasts as new SpatialReference()
-    wkid: 102100,
-  },
-};
-
-const initialCamera = {
-  position: {
-    x: -117.63062,
-    y: 47.69173,
-    z: 90000,
-  },
-  tilt: 75,
-};
+import Constants from '../js/constants';
 
 // let view;
 
@@ -38,7 +18,7 @@ export default {
   data() {
     return {
       geoJSONLayerURL: '/api/getAvalancheCanada',
-      camera: initialCamera,
+      camera: Constants.initialCamera,
     };
   },
 
@@ -52,6 +32,10 @@ export default {
         // 'esri/layers/FeatureLayer',
         'esri/layers/GeoJSONLayer',
         // 'esri/core/watchUtils',
+        'esri/layers/ElevationLayer',
+        'esri/layers/BaseElevationLayer',
+        'esri/Basemap',
+        'esri/layers/TileLayer',
       ],
       {
         version: '4.18',
@@ -65,17 +49,15 @@ export default {
         SceneView,
         // FeatureLayer,
         GeoJSONLayer,
-        // watchUtils
+        // watchUtils,
+        ElevationLayer,
+        BaseElevationLayer,
+        Basemap,
+        TileLayer,
       ]) => {
         /** *********************
          * Create pop-up template
          ************************ */
-        const template = {
-          title: 'Avalanche Region Info',
-          content: `Name {name}<br/>
-            Date Issued: {dateIssued}<br/>
-            validUntil {validUntil}`,
-        };
 
         /** *********************
          * Create layers
@@ -83,9 +65,9 @@ export default {
         const geojsonLayer = new GeoJSONLayer({
           url: '/api/getAvalancheCanada', // this.geoJSONLayerURL,
           copyright: 'Avalanche Canada',
-          popupTemplate: template,
-          opacity: 1,
-          // renderer: this.geoJSONRenderer('btl'),
+          popupTemplate: Constants.template,
+          // opacity: 1,
+          renderer: this.geoJSONRenderer('alp'),
         });
 
         const map = new Map({
@@ -107,6 +89,24 @@ export default {
       });
   },
 
+  methods: {
+    geoJSONRenderer(altitudeRange) {
+      return {
+        type: 'unique-value',
+        defaultSymbol: {
+          type: 'simple-fill',
+          color: [136, 136, 136, 0.3],
+          title: 'id',
+          outline: {
+            color: 'white',
+            width: '5',
+          },
+        },
+        valueExpression: `Left($feature.${altitudeRange}, 1)`,
+        uniqueValueInfos: Constants.uniqueValueInfosArray,
+      };
+    },
+  },
 };
 </script>
 

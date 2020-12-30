@@ -5,8 +5,8 @@
 </template>
 
 <script>
-import WebMap from './components/WebMap.vue';
 
+import WebMap from './components/WebMap.vue';
 
 export default {
   name: 'App',
